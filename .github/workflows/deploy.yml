@@ -3,14 +3,11 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Flutter
+name: Flutter (Deploy)
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,6 +21,15 @@ jobs:
           channel: 'stable'
       - name: Update dependencies
         run: flutter --version && flutter pub get
+      - name: Analyze
+        run: flutter analyze
+      - name: Tests
+        run: flutter test --coverage
+      - name: Archive Coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: coverage/lcov.info
       - name: Build Web
         run: flutter build web
       - name: Archive build
@@ -38,4 +44,3 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_POMODORO_A2996 }}'
           channelId: live
           projectId: pomodoro-a2996
-
