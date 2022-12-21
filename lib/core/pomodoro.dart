@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 enum PomodoroState { pomodoro, shortBreak, longBreak }
 
 class Pomodoro {
@@ -10,18 +12,39 @@ class Pomodoro {
     this.longBreakInterval = 4,
   });
 
-  late Timer _timer;
-  final Stopwatch _stopWatch = Stopwatch();
   int pomodorosCompleted = 0;
   int longBreakInterval;
-  PomodoroState _state = PomodoroState.pomodoro;
   Duration pomodoroDuration;
   Duration shortBreakDuration;
   Duration longBreakDuration;
 
-  Duration get _remainingPomodoro => pomodoroDuration - _stopWatch.elapsed;
-  Duration get _remainingShortBreak => shortBreakDuration - _stopWatch.elapsed;
-  Duration get _remainingLongBreak => longBreakDuration - _stopWatch.elapsed;
+  bool get isRunning => stopWatch.isRunning;
+  PomodoroState get state => _state;
+
+  set state(PomodoroState newState) {
+    stopWatch.stop();
+    stopWatch.reset();
+    _state = newState;
+  }
+
+  void start() {
+    stopWatch.start();
+    timer = Timer(remainingTime, _onTimerComplete);
+  }
+
+  void stop() {
+    stopWatch.stop();
+    timer.cancel();
+  }
+
+  @visibleForTesting
+  late Timer timer;
+  @visibleForTesting
+  final Stopwatch stopWatch = Stopwatch();
+  PomodoroState _state = PomodoroState.pomodoro;
+  Duration get _remainingPomodoro => pomodoroDuration - stopWatch.elapsed;
+  Duration get _remainingShortBreak => shortBreakDuration - stopWatch.elapsed;
+  Duration get _remainingLongBreak => longBreakDuration - stopWatch.elapsed;
   Duration get remainingTime {
     if (_state == PomodoroState.shortBreak) return _remainingShortBreak;
     if (_state == PomodoroState.longBreak) return _remainingLongBreak;
@@ -29,29 +52,11 @@ class Pomodoro {
     return _remainingPomodoro;
   }
 
-  bool get isRunning => _stopWatch.isRunning;
-  PomodoroState get state => _state;
-  set state(PomodoroState newState) {
-    _stopWatch.stop();
-    _stopWatch.reset();
-    _state = newState;
-  }
-
-  void start() {
-    _stopWatch.start();
-    _timer = Timer(remainingTime, _onTimerComplete);
-  }
-
-  void stop() {
-    _stopWatch.stop();
-    _timer.cancel();
-  }
-
   void _onTimerComplete() {
-    print('Time is up');
+    debugPrint('Time is up');
 
-    _stopWatch.stop();
-    _stopWatch.reset();
+    stopWatch.stop();
+    stopWatch.reset();
     if (_state == PomodoroState.pomodoro) {
       _onPomodoroComplete();
     } else {
@@ -60,7 +65,7 @@ class Pomodoro {
   }
 
   void _onPomodoroComplete() {
-    print('Pomodoro complete!');
+    debugPrint('Pomodoro complete!');
 
     pomodorosCompleted += 1;
     if (pomodorosCompleted % longBreakInterval == 0) {
@@ -71,7 +76,7 @@ class Pomodoro {
   }
 
   void _onBreakComplete() {
-    print('Break complete!');
+    debugPrint('Break complete!');
 
     _state = PomodoroState.pomodoro;
   }
