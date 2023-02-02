@@ -44,6 +44,17 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(context).pushNamed('/settings');
+            },
+            icon: const Icon(Icons.settings),
+            label: const Text('Settings'),
+          )
+        ],
+      ),
       backgroundColor: Colors.redAccent,
       body: Consumer<Pomodoro>(
         builder: (context, pomodoro, child) => Center(
