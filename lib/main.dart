@@ -3,6 +3,7 @@ import 'package:pomodoro/core/pomodoro.dart';
 import 'package:provider/provider.dart';
 
 import 'ui/home.dart';
+import 'ui/settings.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
         ),
         routes: {
           '/': (context) => const MyHomePage(title: 'Pomodoro Timer'),
+          '/settings': (context) => const Settings()
         },
       ),
     );
