@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pomodoro/core/pomodoro.dart';
+import 'package:provider/provider.dart';
 
 import 'ui/home.dart';
 
@@ -11,12 +13,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Pomodoro',
-      theme: ThemeData(
-        primarySwatch: Colors.red,
+    return Provider<Pomodoro>(
+      create: (context) => Pomodoro(),
+      child: MaterialApp(
+        title: 'Pomodoro',
+        theme: ThemeData(
+          useMaterial3: true,
+          colorSchemeSeed: Colors.red,
+        ),
+        routes: {
+          '/': (context) => const MyHomePage(title: 'Pomodoro Timer'),
+        },
       ),
-      home: const MyHomePage(title: 'Pomodoro Timer'),
     );
   }
 }
