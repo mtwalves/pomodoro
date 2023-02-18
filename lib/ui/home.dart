@@ -32,15 +32,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  // TODO: Add tests for this function (bug when minutes > 60)
-  String remainingTime(Pomodoro pomodoro) {
-    Duration remaining = pomodoro.remainingTime;
-    String minutes = (remaining.inMinutes % 60).toString().padLeft(2, '0');
-    String seconds = (remaining.inSeconds % 60).toString().padLeft(2, '0');
-
-    return '$minutes:$seconds';
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,18 +87,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       ]),
                   const SizedBox(height: 20),
                   Text(
-                    remainingTime(pomodoro),
+                    pomodoro.remainingTimeText,
                     style: Theme.of(context).textTheme.displayLarge,
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                      onPressed: () {
-                        if (pomodoro.isRunning) {
-                          pomodoro.stop();
-                        } else {
-                          pomodoro.start();
-                        }
-                      },
+                      onPressed: pomodoro.toggle,
                       style: ButtonStyle(
                         padding: MaterialStateProperty.all<EdgeInsets>(
                           const EdgeInsets.symmetric(
