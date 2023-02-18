@@ -178,5 +178,21 @@ void main() {
         expect(pomodoro.remainingTimeText, '90:00');
       });
     });
+
+    group('on timer complete callback', () {
+      test('should execute callback when timer is complete', () async {
+        bool wasCalled = false;
+        Pomodoro pomodoro = Pomodoro(
+            pomodoroDuration: const Duration(seconds: 1),
+            onTimerComplete: () {
+              wasCalled = true;
+            });
+
+        pomodoro.start();
+        await Future.delayed(const Duration(seconds: 1));
+
+        expect(wasCalled, true);
+      });
+    });
   });
 }
