@@ -155,5 +155,28 @@ void main() {
         });
       });
     });
+
+    group('remaining time', () {
+      test('seconds should be correct', () {
+        Pomodoro pomodoro =
+            Pomodoro(pomodoroDuration: const Duration(seconds: 1));
+        expect(pomodoro.remainingTimeText, '00:01');
+
+        pomodoro.pomodoroDuration = const Duration(seconds: 50);
+        expect(pomodoro.remainingTimeText, '00:50');
+      });
+
+      test('minutes should be correct', () {
+        Pomodoro pomodoro =
+            Pomodoro(pomodoroDuration: const Duration(minutes: 1));
+        expect(pomodoro.remainingTimeText, '01:00');
+
+        pomodoro.pomodoroDuration = const Duration(minutes: 50);
+        expect(pomodoro.remainingTimeText, '50:00');
+
+        pomodoro.pomodoroDuration = const Duration(minutes: 90);
+        expect(pomodoro.remainingTimeText, '90:00');
+      });
+    });
   });
 }

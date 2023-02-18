@@ -48,6 +48,20 @@ class Pomodoro {
 
   bool get isRunning => stopWatch.isRunning;
 
+  Duration get remainingTime {
+    if (_state == PomodoroState.shortBreak) return _remainingShortBreak;
+    if (_state == PomodoroState.longBreak) return _remainingLongBreak;
+
+    return _remainingPomodoro;
+  }
+
+  String get remainingTimeText {
+    String minutes = (remainingTime.inMinutes).toString().padLeft(2, '0');
+    String seconds = (remainingTime.inSeconds % 60).toString().padLeft(2, '0');
+
+    return '$minutes:$seconds';
+  }
+
   void start() {
     stopWatch.start();
     timer = Timer(remainingTime, _onTimerComplete);
@@ -56,6 +70,14 @@ class Pomodoro {
   void stop() {
     stopWatch.stop();
     timer.cancel();
+  }
+
+  void toggle() {
+    if (isRunning) {
+      stop();
+    } else {
+      start();
+    }
   }
 
   // --- Private variables and functions ---
@@ -67,12 +89,6 @@ class Pomodoro {
   Duration get _remainingPomodoro => pomodoroDuration - stopWatch.elapsed;
   Duration get _remainingShortBreak => shortBreakDuration - stopWatch.elapsed;
   Duration get _remainingLongBreak => longBreakDuration - stopWatch.elapsed;
-  Duration get remainingTime {
-    if (_state == PomodoroState.shortBreak) return _remainingShortBreak;
-    if (_state == PomodoroState.longBreak) return _remainingLongBreak;
-
-    return _remainingPomodoro;
-  }
 
   void _onTimerComplete() {
     debugPrint('Time is up');
