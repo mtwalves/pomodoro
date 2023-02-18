@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,10 +17,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late Timer timer;
+  late Pomodoro pomodoro;
+  final player = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
+    pomodoro = Provider.of<Pomodoro>(context, listen: false);
+    pomodoro.onTimerComplete =
+        () => player.play(AssetSource('sounds/analog-alarm-clock.wav'));
 
     timer =
         Timer.periodic(const Duration(seconds: 1), ((_) => setState(() {})));

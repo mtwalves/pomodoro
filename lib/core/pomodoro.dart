@@ -10,6 +10,7 @@ class Pomodoro {
     shortBreakDuration = const Duration(minutes: 5),
     longBreakDuration = const Duration(minutes: 15),
     this.longBreakInterval = 4,
+    this.onTimerComplete,
   }) {
     _pomodoroDuration = pomodoroDuration;
     _shortBreakDuration = shortBreakDuration;
@@ -21,6 +22,7 @@ class Pomodoro {
   late Duration _pomodoroDuration;
   late Duration _shortBreakDuration;
   late Duration _longBreakDuration;
+  void Function()? onTimerComplete;
 
   Duration get pomodoroDuration => _pomodoroDuration;
   set pomodoroDuration(Duration duration) {
@@ -92,7 +94,9 @@ class Pomodoro {
 
   void _onTimerComplete() {
     debugPrint('Time is up');
-
+    if (onTimerComplete != null) {
+      onTimerComplete!();
+    }
     _reset();
     if (_state == PomodoroState.pomodoro) {
       _onPomodoroComplete();
