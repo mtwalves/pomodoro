@@ -57,5 +57,103 @@ void main() {
             greaterThanOrEqualTo(const Duration(seconds: 1)));
       });
     });
+
+    group('updates timers', () {
+      group('pomodoro', () {
+        test('should reset when timer is updated and is on pomodoro state',
+            () async {
+          Pomodoro pomodoro = Pomodoro(
+            pomodoroDuration: const Duration(seconds: 60),
+          );
+
+          pomodoro.start();
+          await Future.delayed(const Duration(seconds: 1));
+          pomodoro.pomodoroDuration = const Duration(seconds: 120);
+
+          expect(pomodoro.stopWatch.isRunning, false);
+          expect(pomodoro.stopWatch.elapsedMilliseconds, 0);
+        });
+
+        test(
+            'should NOT reset when timer is updated and is NOT on pomodoro state',
+            () async {
+          Pomodoro pomodoro = Pomodoro(
+            pomodoroDuration: const Duration(seconds: 60),
+          );
+          pomodoro.state = PomodoroState.shortBreak;
+          pomodoro.start();
+          await Future.delayed(const Duration(seconds: 1));
+          pomodoro.pomodoroDuration = const Duration(seconds: 120);
+
+          expect(pomodoro.stopWatch.isRunning, true);
+          expect(pomodoro.stopWatch.elapsed,
+              greaterThanOrEqualTo(const Duration(seconds: 1)));
+        });
+      });
+
+      group('short break', () {
+        test('should reset when timer is updated and is on short break state',
+            () async {
+          Pomodoro pomodoro = Pomodoro(
+            shortBreakDuration: const Duration(seconds: 60),
+          );
+          pomodoro.state = PomodoroState.shortBreak;
+          pomodoro.start();
+          await Future.delayed(const Duration(seconds: 1));
+          pomodoro.shortBreakDuration = const Duration(seconds: 120);
+
+          expect(pomodoro.stopWatch.isRunning, false);
+          expect(pomodoro.stopWatch.elapsedMilliseconds, 0);
+        });
+
+        test(
+            'should NOT reset when timer is updated and is NOT on short break state',
+            () async {
+          Pomodoro pomodoro = Pomodoro(
+            shortBreakDuration: const Duration(seconds: 60),
+          );
+          pomodoro.state = PomodoroState.longBreak;
+          pomodoro.start();
+          await Future.delayed(const Duration(seconds: 1));
+          pomodoro.shortBreakDuration = const Duration(seconds: 120);
+
+          expect(pomodoro.stopWatch.isRunning, true);
+          expect(pomodoro.stopWatch.elapsed,
+              greaterThanOrEqualTo(const Duration(seconds: 1)));
+        });
+      });
+
+      group('long break', () {
+        test('should reset when timer is updated and is on long break state',
+            () async {
+          Pomodoro pomodoro = Pomodoro(
+            longBreakDuration: const Duration(seconds: 60),
+          );
+          pomodoro.state = PomodoroState.longBreak;
+          pomodoro.start();
+          await Future.delayed(const Duration(seconds: 1));
+          pomodoro.longBreakDuration = const Duration(seconds: 120);
+
+          expect(pomodoro.stopWatch.isRunning, false);
+          expect(pomodoro.stopWatch.elapsedMilliseconds, 0);
+        });
+
+        test(
+            'should NOT reset when timer is updated and is NOT on long break state',
+            () async {
+          Pomodoro pomodoro = Pomodoro(
+            longBreakDuration: const Duration(seconds: 60),
+          );
+          pomodoro.state = PomodoroState.pomodoro;
+          pomodoro.start();
+          await Future.delayed(const Duration(seconds: 1));
+          pomodoro.longBreakDuration = const Duration(seconds: 120);
+
+          expect(pomodoro.stopWatch.isRunning, true);
+          expect(pomodoro.stopWatch.elapsed,
+              greaterThanOrEqualTo(const Duration(seconds: 1)));
+        });
+      });
+    });
   });
 }
