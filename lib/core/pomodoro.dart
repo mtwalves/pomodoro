@@ -6,26 +6,47 @@ enum PomodoroState { pomodoro, shortBreak, longBreak }
 
 class Pomodoro {
   Pomodoro({
-    this.pomodoroDuration = const Duration(minutes: 25),
-    this.shortBreakDuration = const Duration(minutes: 5),
-    this.longBreakDuration = const Duration(minutes: 15),
+    pomodoroDuration = const Duration(minutes: 25),
+    shortBreakDuration = const Duration(minutes: 5),
+    longBreakDuration = const Duration(minutes: 15),
     this.longBreakInterval = 4,
-  });
+  }) {
+    _pomodoroDuration = pomodoroDuration;
+    _shortBreakDuration = shortBreakDuration;
+    _longBreakDuration = longBreakDuration;
+  }
 
   int pomodorosCompleted = 0;
   int longBreakInterval;
-  Duration pomodoroDuration;
-  Duration shortBreakDuration;
-  Duration longBreakDuration;
+  late Duration _pomodoroDuration;
+  late Duration _shortBreakDuration;
+  late Duration _longBreakDuration;
 
-  bool get isRunning => stopWatch.isRunning;
+  Duration get pomodoroDuration => _pomodoroDuration;
+  set pomodoroDuration(Duration duration) {
+    if (state == PomodoroState.pomodoro) _reset();
+    _pomodoroDuration = duration;
+  }
+
+  Duration get shortBreakDuration => _shortBreakDuration;
+  set shortBreakDuration(Duration duration) {
+    if (state == PomodoroState.shortBreak) _reset();
+    _shortBreakDuration = duration;
+  }
+
+  Duration get longBreakDuration => _longBreakDuration;
+  set longBreakDuration(Duration duration) {
+    if (state == PomodoroState.longBreak) _reset();
+    _longBreakDuration = duration;
+  }
+
   PomodoroState get state => _state;
-
   set state(PomodoroState newState) {
-    stopWatch.stop();
-    stopWatch.reset();
+    _reset();
     _state = newState;
   }
+
+  bool get isRunning => stopWatch.isRunning;
 
   void start() {
     stopWatch.start();
@@ -37,6 +58,7 @@ class Pomodoro {
     timer.cancel();
   }
 
+  // --- Private variables and functions ---
   @visibleForTesting
   late Timer timer;
   @visibleForTesting
@@ -55,8 +77,7 @@ class Pomodoro {
   void _onTimerComplete() {
     debugPrint('Time is up');
 
-    stopWatch.stop();
-    stopWatch.reset();
+    _reset();
     if (_state == PomodoroState.pomodoro) {
       _onPomodoroComplete();
     } else {
@@ -79,5 +100,10 @@ class Pomodoro {
     debugPrint('Break complete!');
 
     _state = PomodoroState.pomodoro;
+  }
+
+  void _reset() {
+    stopWatch.stop();
+    stopWatch.reset();
   }
 }
