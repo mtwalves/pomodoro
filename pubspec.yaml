@@ -38,6 +38,8 @@ dependencies:
   bloc: ^8.1.0
   equatable: ^2.0.3
   flutter_bloc: ^8.1.2
+  hydrated_bloc: ^9.1.0
+  path_provider: ^2.0.12
 
 dev_dependencies:
   flutter_test:
