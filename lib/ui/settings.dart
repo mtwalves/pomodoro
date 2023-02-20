@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pomodoro/core/pomodoro.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pomodoro/core/bloc/pomodoro/bloc/pomodoro_bloc.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -11,19 +11,18 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  late Pomodoro pomodoro;
+  late PomodoroBloc pomodoro;
 
   final formKey = GlobalKey<FormState>();
   final pomodoroController = TextEditingController();
   final shortBreakController = TextEditingController();
   final longBreakController = TextEditingController();
   final longBreakIntervalController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
 
-    pomodoro = Provider.of<Pomodoro>(context, listen: false);
+    pomodoro = context.read<PomodoroBloc>();
     pomodoroController.text = pomodoro.pomodoroDuration.inMinutes.toString();
     shortBreakController.text =
         pomodoro.shortBreakDuration.inMinutes.toString();

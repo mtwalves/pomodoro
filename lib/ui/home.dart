@@ -1,10 +1,8 @@
-import 'dart:async';
-
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import '../core/pomodoro.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pomodoro/core/bloc/pomodoro/bloc/pomodoro_bloc.dart';
+import 'package:pomodoro/core/bloc/timer/timer_bloc.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -16,27 +14,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late Timer timer;
-  late Pomodoro pomodoro;
   final player = AudioPlayer();
-
-  @override
-  void initState() {
-    super.initState();
-    pomodoro = Provider.of<Pomodoro>(context, listen: false);
-    pomodoro.onTimerComplete =
-        () => player.play(AssetSource('sounds/analog-alarm-clock.wav'));
-
-    timer =
-        Timer.periodic(const Duration(seconds: 1), ((_) => setState(() {})));
-  }
-
-  @override
-  void dispose() {
-    timer.cancel();
-
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +31,13 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       backgroundColor: Colors.redAccent,
-      body: Consumer<Pomodoro>(
-        builder: (context, pomodoro, child) => Center(
+      body: BlocListener<TimerBloc, TimerState>(
+        listener: (context, state) {
+          if (state is TimerRunComplete) {
+            player.play(AssetSource('sounds/analog-alarm-clock.wav'));
+          }
+        },
+        child: Center(
           child: Container(
             color: Colors.white,
             child: Padding(
@@ -66,51 +49,47 @@ class _MyHomePageState extends State<MyHomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  ToggleButtons(
-                      isSelected: [
-                        pomodoro.state == PomodoroState.pomodoro,
-                        pomodoro.state == PomodoroState.shortBreak,
-                        pomodoro.state == PomodoroState.longBreak,
-                      ],
-                      onPressed: (int index) {
-                        setState(() {
-                          pomodoro.state = PomodoroState.values[index];
-                        });
-                      },
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      selectedBorderColor: Colors.red[700],
-                      selectedColor: Colors.white,
-                      fillColor: Colors.red[200],
-                      color: Colors.red[400],
-                      constraints: const BoxConstraints(
-                        minHeight: 40.0,
-                        minWidth: 80.0,
-                      ),
-                      children: const [
-                        Text('Pomodoro'),
-                        Text('Short Break'),
-                        Text('Long Break')
-                      ]),
-                  const SizedBox(height: 20),
-                  Text(
-                    pomodoro.remainingTimeText,
-                    style: Theme.of(context).textTheme.displayLarge,
+                  BlocBuilder<PomodoroBloc, PomodoroState>(
+                    builder: (context, state) {
+                      return ToggleButtons(
+                          isSelected: [
+                            state is PomodoroSet,
+                            state is PomodoroShortBreak,
+                            state is PomodoroLongBreak,
+                          ],
+                          onPressed: (int index) {
+                            PomodoroEvent event = PomodoroSetPressed();
+                            if (index == 1) {
+                              event = PomodoroShortBreakPressed();
+                            } else if (index == 2) {
+                              event = PomodoroLongBreakPressed();
+                            }
+
+                            context.read<PomodoroBloc>().add(event);
+                          },
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(8)),
+                          selectedBorderColor: Colors.red[700],
+                          selectedColor: Colors.white,
+                          fillColor: Colors.red[200],
+                          color: Colors.red[400],
+                          constraints: const BoxConstraints(
+                            minHeight: 40.0,
+                            minWidth: 80.0,
+                          ),
+                          children: const [
+                            Text('Pomodoro'),
+                            Text('Short Break'),
+                            Text('Long Break')
+                          ]);
+                    },
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton(
-                      onPressed: pomodoro.toggle,
-                      style: ButtonStyle(
-                        padding: MaterialStateProperty.all<EdgeInsets>(
-                          const EdgeInsets.symmetric(
-                              vertical: 20, horizontal: 50),
-                        ),
-                      ),
-                      child: Text(
-                        pomodoro.isRunning ? 'STOP' : 'START',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      )),
+                  const TimerText(),
                   const SizedBox(height: 20),
-                  Text('#${pomodoro.pomodorosCompleted}')
+                  const TimerButton(),
+                  const SizedBox(height: 20),
+                  const PomodorosCompleted(),
                 ],
               ),
             ),
@@ -118,5 +97,60 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+}
+
+class PomodorosCompleted extends StatelessWidget {
+  const PomodorosCompleted({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    final int number =
+        context.select((PomodoroBloc bloc) => bloc.pomodorosCompleted);
+
+    return Text('#$number');
+  }
+}
+
+class TimerText extends StatelessWidget {
+  const TimerText({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    final duration = context.select((TimerBloc bloc) => bloc.state.duration);
+    final minutesStr =
+        ((duration / 60) % 60).floor().toString().padLeft(2, '0');
+    final secondsStr = (duration % 60).floor().toString().padLeft(2, '0');
+
+    return Text(
+      '$minutesStr:$secondsStr',
+      style: Theme.of(context).textTheme.displayLarge,
+    );
+  }
+}
+
+class TimerButton extends StatelessWidget {
+  const TimerButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isRunning = context.select((TimerBloc bloc) => bloc.isRunning);
+    final PomodoroBloc pomodoro = context.read<PomodoroBloc>();
+
+    return ElevatedButton(
+        onPressed: () {
+          if (isRunning) {
+            pomodoro.add(PomodoroTimerStop());
+          } else {
+            pomodoro.add(PomodoroTimerStart());
+          }
+        },
+        style: ButtonStyle(
+          padding: MaterialStateProperty.all<EdgeInsets>(
+            const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
+          ),
+        ),
+        child: Text(
+          isRunning ? 'STOP' : 'START',
+          style: Theme.of(context).textTheme.titleLarge,
+        ));
   }
 }

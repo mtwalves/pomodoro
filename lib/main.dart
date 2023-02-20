@@ -1,21 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:pomodoro/core/pomodoro.dart';
-import 'package:provider/provider.dart';
+import 'package:pomodoro/core/bloc/pomodoro/bloc/pomodoro_bloc.dart';
+import 'package:pomodoro/core/bloc/timer/ticker.dart';
+import 'package:pomodoro/core/bloc/timer/timer_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'ui/home.dart';
 import 'ui/settings.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
+  final TimerBloc timerBloc = TimerBloc(ticker: const Ticker());
 
   @override
   Widget build(BuildContext context) {
-    return Provider<Pomodoro>(
-      create: (context) => Pomodoro(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: timerBloc),
+        BlocProvider(
+          lazy: false,
+          create: (context) => PomodoroBloc(timer: timerBloc),
+        ),
+      ],
       child: MaterialApp(
         title: 'Pomodoro',
         theme: ThemeData(

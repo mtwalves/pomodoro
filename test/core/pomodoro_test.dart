@@ -14,13 +14,13 @@ void main() {
         pomodoro.start();
         await Future.delayed(const Duration(seconds: 1));
         expect(pomodoro.pomodorosCompleted, 1);
-        expect(pomodoro.state, PomodoroState.shortBreak);
+        expect(pomodoro.state, PomodoroStateOld.shortBreak);
       });
 
       test('should change to POMODORO when SHORT BREAK is done', () async {
         pomodoro.start();
         await Future.delayed(const Duration(seconds: 1));
-        expect(pomodoro.state, PomodoroState.pomodoro);
+        expect(pomodoro.state, PomodoroStateOld.pomodoro);
       });
 
       test(
@@ -29,7 +29,7 @@ void main() {
         pomodoro.start();
         await Future.delayed(const Duration(seconds: 1));
         expect(pomodoro.pomodorosCompleted, 2);
-        expect(pomodoro.state, PomodoroState.longBreak);
+        expect(pomodoro.state, PomodoroStateOld.longBreak);
       });
     });
 
@@ -80,7 +80,7 @@ void main() {
           Pomodoro pomodoro = Pomodoro(
             pomodoroDuration: const Duration(seconds: 60),
           );
-          pomodoro.state = PomodoroState.shortBreak;
+          pomodoro.state = PomodoroStateOld.shortBreak;
           pomodoro.start();
           await Future.delayed(const Duration(seconds: 1));
           pomodoro.pomodoroDuration = const Duration(seconds: 120);
@@ -97,7 +97,7 @@ void main() {
           Pomodoro pomodoro = Pomodoro(
             shortBreakDuration: const Duration(seconds: 60),
           );
-          pomodoro.state = PomodoroState.shortBreak;
+          pomodoro.state = PomodoroStateOld.shortBreak;
           pomodoro.start();
           await Future.delayed(const Duration(seconds: 1));
           pomodoro.shortBreakDuration = const Duration(seconds: 120);
@@ -112,7 +112,7 @@ void main() {
           Pomodoro pomodoro = Pomodoro(
             shortBreakDuration: const Duration(seconds: 60),
           );
-          pomodoro.state = PomodoroState.longBreak;
+          pomodoro.state = PomodoroStateOld.longBreak;
           pomodoro.start();
           await Future.delayed(const Duration(seconds: 1));
           pomodoro.shortBreakDuration = const Duration(seconds: 120);
@@ -129,7 +129,7 @@ void main() {
           Pomodoro pomodoro = Pomodoro(
             longBreakDuration: const Duration(seconds: 60),
           );
-          pomodoro.state = PomodoroState.longBreak;
+          pomodoro.state = PomodoroStateOld.longBreak;
           pomodoro.start();
           await Future.delayed(const Duration(seconds: 1));
           pomodoro.longBreakDuration = const Duration(seconds: 120);
@@ -144,7 +144,7 @@ void main() {
           Pomodoro pomodoro = Pomodoro(
             longBreakDuration: const Duration(seconds: 60),
           );
-          pomodoro.state = PomodoroState.pomodoro;
+          pomodoro.state = PomodoroStateOld.pomodoro;
           pomodoro.start();
           await Future.delayed(const Duration(seconds: 1));
           pomodoro.longBreakDuration = const Duration(seconds: 120);
