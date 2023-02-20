@@ -1,31 +1,28 @@
-import 'dart:async';
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:pomodoro/core/bloc/timer/timer_bloc.dart';
 
 part 'pomodoro_event.dart';
 part 'pomodoro_state.dart';
 
-class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
+class PomodoroBloc extends HydratedBloc<PomodoroEvent, PomodoroState> {
   PomodoroBloc({
     required this.timer,
-    Duration pomodoroDuration = const Duration(minutes: 25),
-    Duration shortBreakDuration = const Duration(minutes: 5),
-    Duration longBreakDuration = const Duration(minutes: 15),
-    this.longBreakInterval = 4,
-  }) : super(PomodoroInitial()) {
-    _pomodoroDuration = pomodoroDuration;
-    _shortBreakDuration = shortBreakDuration;
-    _longBreakDuration = longBreakDuration;
-
-    Future.delayed(const Duration(seconds: 1)).then((value) {
-      emit(PomodoroSet());
-      _resetTimer(_pomodoroDuration);
-    });
-
+  }) : super(const PomodoroInitial(
+          pomodoroDuration: Duration(minutes: 25),
+          shortBreakDuration: Duration(minutes: 5),
+          longBreakDuration: Duration(minutes: 15),
+          longBreakInterval: 4,
+          pomodorosCompleted: 0,
+        )) {
     timer.stream.listen((event) {
-      print(event);
-      if (event is TimerRunComplete) _onTimerComplete(emit);
+      if (event is TimerRunComplete) {
+        if (state is PomodoroSet) {
+          add(PomodoroCompleted());
+        } else {
+          add(PomodoroBreakCompleted());
+        }
+      }
     });
 
     on<PomodoroSetPressed>((event, emit) => _onPomodoro(emit));
@@ -41,70 +38,129 @@ class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
     on<PomodoroTimerStop>((event, emit) {
       timer.add(const TimerPaused());
     });
+    on<PomodoroSettings>((event, emit) {
+      if (state is PomodoroSet) {
+        emit(PomodoroSet(
+          pomodoroDuration: event.pomodoroDuration,
+          longBreakDuration: event.longBreakDuration,
+          shortBreakDuration: event.shortBreakDuration,
+          longBreakInterval: event.longBreakInterval,
+          pomodorosCompleted: state.pomodorosCompleted,
+        ));
+      } else if (state is PomodoroShortBreak) {
+        emit(PomodoroShortBreak(
+          pomodoroDuration: event.pomodoroDuration,
+          longBreakDuration: event.longBreakDuration,
+          shortBreakDuration: event.shortBreakDuration,
+          longBreakInterval: event.longBreakInterval,
+          pomodorosCompleted: state.pomodorosCompleted,
+        ));
+      } else if (state is PomodoroLongBreak) {
+        emit(PomodoroLongBreak(
+          pomodoroDuration: event.pomodoroDuration,
+          longBreakDuration: event.longBreakDuration,
+          shortBreakDuration: event.shortBreakDuration,
+          longBreakInterval: event.longBreakInterval,
+          pomodorosCompleted: state.pomodorosCompleted,
+        ));
+      }
+    });
+    on<PomodoroCompleted>((event, emit) {
+      int pomodorosCompleted = state.pomodorosCompleted + 1;
+      if (pomodorosCompleted % longBreakInterval == 0) {
+        _onLongBreak(emit, pomodorosCompleted: true);
+      } else {
+        _onShortBreak(emit, pomodorosCompleted: true);
+      }
+    });
+    on<PomodoroBreakCompleted>((event, emit) {
+      _onPomodoro(emit);
+    });
+  }
+
+  @override
+  void onChange(Change<PomodoroState> change) {
+    late Duration duration;
+    if (change.nextState is PomodoroSet) {
+      duration = change.nextState.pomodoroDuration;
+    } else if (change.nextState is PomodoroShortBreak) {
+      duration = change.nextState.shortBreakDuration;
+    } else if (change.nextState is PomodoroLongBreak) {
+      duration = change.nextState.longBreakDuration;
+    }
+    _resetTimer(duration);
+    super.onChange(change);
   }
 
   final TimerBloc timer;
-  int pomodorosCompleted = 0;
-  int longBreakInterval;
-  late Duration _pomodoroDuration;
-  late Duration _shortBreakDuration;
-  late Duration _longBreakDuration;
+
+  int get pomodorosCompleted => state.pomodorosCompleted;
 
   bool get isLoading => state is PomodoroInitial;
 
-  Duration get pomodoroDuration => _pomodoroDuration;
-  set pomodoroDuration(Duration duration) {
-    if (state is PomodoroSet) {
-      _resetTimer(duration);
-    }
-    _pomodoroDuration = duration;
-  }
+  int get longBreakInterval => state.longBreakInterval;
 
-  Duration get shortBreakDuration => _shortBreakDuration;
-  set shortBreakDuration(Duration duration) {
-    if (state is PomodoroShortBreak) {
-      _resetTimer(duration);
-    }
-    _shortBreakDuration = duration;
-  }
+  Duration get pomodoroDuration => state.pomodoroDuration;
 
-  Duration get longBreakDuration => _longBreakDuration;
-  set longBreakDuration(Duration duration) {
-    if (state is PomodoroLongBreak) {
-      _resetTimer(duration);
-    }
-    _longBreakDuration = duration;
-  }
+  Duration get shortBreakDuration => state.shortBreakDuration;
+
+  Duration get longBreakDuration => state.longBreakDuration;
 
   void _resetTimer(Duration duration) {
     timer.add(TimerReset(duration: duration.inSeconds));
   }
 
-  void _onShortBreak(emit) {
-    _resetTimer(_shortBreakDuration);
-    emit(PomodoroShortBreak());
+  void _onShortBreak(emit, {pomodorosCompleted = false}) {
+    emit(PomodoroShortBreak(
+      pomodoroDuration: pomodoroDuration,
+      longBreakDuration: longBreakDuration,
+      shortBreakDuration: shortBreakDuration,
+      longBreakInterval: longBreakInterval,
+      pomodorosCompleted:
+          state.pomodorosCompleted + (pomodorosCompleted ? 1 : 0),
+    ));
   }
 
-  void _onLongBreak(emit) {
-    _resetTimer(_longBreakDuration);
-    emit(PomodoroLongBreak());
+  void _onLongBreak(emit, {pomodorosCompleted = false}) {
+    emit(PomodoroLongBreak(
+      pomodoroDuration: pomodoroDuration,
+      longBreakDuration: longBreakDuration,
+      shortBreakDuration: shortBreakDuration,
+      longBreakInterval: longBreakInterval,
+      pomodorosCompleted:
+          state.pomodorosCompleted + (pomodorosCompleted ? 1 : 0),
+    ));
   }
 
   void _onPomodoro(emit) {
-    _resetTimer(_pomodoroDuration);
-    emit(PomodoroSet());
+    emit(PomodoroSet(
+      pomodoroDuration: pomodoroDuration,
+      longBreakDuration: longBreakDuration,
+      shortBreakDuration: shortBreakDuration,
+      longBreakInterval: longBreakInterval,
+      pomodorosCompleted: state.pomodorosCompleted,
+    ));
   }
 
-  void _onTimerComplete(emit) {
-    if (state is PomodoroSet) {
-      pomodorosCompleted += 1;
-      if (pomodorosCompleted % longBreakInterval == 0) {
-        _onLongBreak(emit);
-      } else {
-        _onShortBreak(emit);
-      }
-    } else {
-      _onPomodoro(emit);
-    }
+  @override
+  PomodoroState? fromJson(Map<String, dynamic> json) {
+    Duration pomodoroDuration = Duration(seconds: json['pomodoroDuration']);
+    _resetTimer(pomodoroDuration);
+
+    return PomodoroSet(
+      pomodoroDuration: pomodoroDuration,
+      shortBreakDuration: Duration(seconds: json['shortBreakDuration']),
+      longBreakDuration: Duration(seconds: json['longBreakDuration']),
+      longBreakInterval: json['longBreakInterval'] ?? 4,
+      pomodorosCompleted: 0,
+    );
   }
+
+  @override
+  Map<String, dynamic>? toJson(PomodoroState state) => {
+        'pomodoroDuration': state.pomodoroDuration.inSeconds,
+        'shortBreakDuration': state.shortBreakDuration.inSeconds,
+        'longBreakDuration': state.longBreakDuration.inSeconds,
+        'longBreakInterval': state.longBreakInterval,
+      };
 }

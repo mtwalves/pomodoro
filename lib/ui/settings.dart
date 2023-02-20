@@ -39,10 +39,12 @@ class _SettingsState extends State<Settings> {
         Duration(minutes: int.parse(longBreakController.text));
     int longBreakInterval = int.parse(longBreakIntervalController.text);
 
-    pomodoro.pomodoroDuration = pomodoroDuration;
-    pomodoro.shortBreakDuration = shortBreakDuration;
-    pomodoro.longBreakDuration = longBreakDuration;
-    pomodoro.longBreakInterval = longBreakInterval;
+    pomodoro.add(PomodoroSettings(
+      pomodoroDuration: pomodoroDuration,
+      shortBreakDuration: shortBreakDuration,
+      longBreakDuration: longBreakDuration,
+      longBreakInterval: longBreakInterval,
+    ));
 
     Navigator.pop(context);
   }
