@@ -24,20 +24,6 @@ abstract class PomodoroState extends Equatable {
       ];
 }
 
-class PomodoroInitial extends PomodoroState {
-  const PomodoroInitial({
-    required super.pomodoroDuration,
-    required super.shortBreakDuration,
-    required super.longBreakDuration,
-    required super.longBreakInterval,
-    required super.pomodorosCompleted,
-  });
-
-  @override
-  String toString() =>
-      'PomodoroInitial { pomodoroDuration: ${pomodoroDuration.inSeconds} }';
-}
-
 class PomodoroSet extends PomodoroState {
   const PomodoroSet({
     required super.pomodoroDuration,

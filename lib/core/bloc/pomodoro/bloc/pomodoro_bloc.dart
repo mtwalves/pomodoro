@@ -8,7 +8,7 @@ part 'pomodoro_state.dart';
 class PomodoroBloc extends HydratedBloc<PomodoroEvent, PomodoroState> {
   PomodoroBloc({
     required this.timer,
-  }) : super(const PomodoroInitial(
+  }) : super(const PomodoroSet(
           pomodoroDuration: Duration(minutes: 25),
           shortBreakDuration: Duration(minutes: 5),
           longBreakDuration: Duration(minutes: 15),
@@ -95,8 +95,6 @@ class PomodoroBloc extends HydratedBloc<PomodoroEvent, PomodoroState> {
   final TimerBloc timer;
 
   int get pomodorosCompleted => state.pomodorosCompleted;
-
-  bool get isLoading => state is PomodoroInitial;
 
   int get longBreakInterval => state.longBreakInterval;
 
