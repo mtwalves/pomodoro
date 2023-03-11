@@ -17,11 +17,7 @@ class PomodoroBloc extends HydratedBloc<PomodoroEvent, PomodoroState> {
         )) {
     timer.stream.listen((event) {
       if (event is TimerRunComplete) {
-        if (state is PomodoroSet) {
-          add(PomodoroCompleted());
-        } else {
-          add(PomodoroBreakCompleted());
-        }
+        _goToNextState();
       }
     });
 
@@ -76,6 +72,9 @@ class PomodoroBloc extends HydratedBloc<PomodoroEvent, PomodoroState> {
     on<PomodoroBreakCompleted>((event, emit) {
       _onPomodoro(emit);
     });
+    on<PomodoroSkipNext>((event, emit) {
+      _goToNextState();
+    });
   }
 
   @override
@@ -103,6 +102,11 @@ class PomodoroBloc extends HydratedBloc<PomodoroEvent, PomodoroState> {
   Duration get shortBreakDuration => state.shortBreakDuration;
 
   Duration get longBreakDuration => state.longBreakDuration;
+
+  Duration get duration => state.duration;
+
+  double get percentage =>
+      ((duration.inSeconds - timer.state.duration) / duration.inSeconds);
 
   void _resetTimer(Duration duration) {
     timer.add(TimerReset(duration: duration.inSeconds));
@@ -138,6 +142,14 @@ class PomodoroBloc extends HydratedBloc<PomodoroEvent, PomodoroState> {
       longBreakInterval: longBreakInterval,
       pomodorosCompleted: state.pomodorosCompleted,
     ));
+  }
+
+  void _goToNextState() {
+    if (state is PomodoroSet) {
+      add(PomodoroCompleted());
+    } else {
+      add(PomodoroBreakCompleted());
+    }
   }
 
   @override

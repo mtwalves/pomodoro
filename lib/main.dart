@@ -39,7 +39,6 @@ class MyApp extends StatelessWidget {
         title: 'Pomodoro',
         theme: ThemeData(
           useMaterial3: true,
-          colorSchemeSeed: Colors.red,
         ),
         routes: {
           '/': (context) => const MyHomePage(title: 'Pomodoro Timer'),

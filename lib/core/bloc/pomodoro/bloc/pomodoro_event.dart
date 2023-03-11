@@ -21,6 +21,8 @@ class PomodoroCompleted extends PomodoroEvent {}
 
 class PomodoroBreakCompleted extends PomodoroEvent {}
 
+class PomodoroSkipNext extends PomodoroEvent {}
+
 class PomodoroSettings extends PomodoroEvent {
   const PomodoroSettings({
     required this.pomodoroDuration,
