@@ -15,6 +15,8 @@ abstract class PomodoroState extends Equatable {
   final int longBreakInterval;
   final int pomodorosCompleted;
 
+  Duration get duration;
+
   @override
   List<Object> get props => [
         pomodoroDuration.inSeconds,
@@ -36,6 +38,9 @@ class PomodoroSet extends PomodoroState {
   @override
   String toString() =>
       'PomodoroSet { pomodoroDuration: ${pomodoroDuration.inSeconds} }';
+
+  @override
+  Duration get duration => pomodoroDuration;
 }
 
 class PomodoroShortBreak extends PomodoroState {
@@ -50,6 +55,9 @@ class PomodoroShortBreak extends PomodoroState {
   @override
   String toString() =>
       'PomodoroShortBreak { pomodoroDuration: ${pomodoroDuration.inSeconds} }';
+
+  @override
+  Duration get duration => shortBreakDuration;
 }
 
 class PomodoroLongBreak extends PomodoroState {
@@ -64,4 +72,7 @@ class PomodoroLongBreak extends PomodoroState {
   @override
   String toString() =>
       'PomodoroLongBreak { pomodoroDuration: ${pomodoroDuration.inSeconds} }';
+
+  @override
+  Duration get duration => longBreakDuration;
 }
