@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pomodoro/core/bloc/pomodoro/bloc/pomodoro_bloc.dart';
 import 'package:pomodoro/core/bloc/timer/timer_bloc.dart';
 import 'package:pomodoro/ui/widgets/timer_buttons.dart';
 import 'package:pomodoro/ui/widgets/timer_circle.dart';
@@ -18,8 +19,29 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final player = AudioPlayer();
 
+  void onItemTapped(int index, BuildContext context) {
+    PomodoroEvent event = PomodoroSetPressed();
+
+    if (index == 1) {
+      event = PomodoroShortBreakPressed();
+    } else if (index == 2) {
+      event = PomodoroLongBreakPressed();
+    }
+
+    context.read<PomodoroBloc>().add(event);
+  }
+
+  int getCurrentIndex(PomodoroState state) {
+    if (state is PomodoroShortBreak) return 1;
+    if (state is PomodoroLongBreak) return 2;
+
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool isLargeScreen = MediaQuery.of(context).size.width > 600;
+
     return Scaffold(
       backgroundColor: Colors.black87,
       body: BlocListener<TimerBloc, TimerState>(
@@ -37,16 +59,36 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
-              children: const <Widget>[
-                ToggleMenu(),
-                SizedBox(height: 50),
-                TimerCircle(),
-                SizedBox(height: 50),
-                TimerButtons(),
-                SizedBox(height: 20),
+              children: <Widget>[
+                if (isLargeScreen) const ToggleMenu(),
+                const SizedBox(height: 50),
+                const TimerCircle(),
+                const SizedBox(height: 50),
+                const TimerButtons(),
+                const SizedBox(height: 20),
               ],
             ),
           ),
+        ),
+      ),
+      bottomNavigationBar: BlocBuilder<PomodoroBloc, PomodoroState>(
+        builder: (context, state) => BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.timer),
+              label: 'Pomodoro',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.snooze),
+              label: 'Short Break',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.snooze),
+              label: 'Long Break',
+            ),
+          ],
+          onTap: (value) => onItemTapped(value, context),
+          currentIndex: getCurrentIndex(state),
         ),
       ),
     );
