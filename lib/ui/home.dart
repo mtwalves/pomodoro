@@ -40,7 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isLargeScreen = MediaQuery.of(context).size.width > 600;
+    final bool isLargeScreen = MediaQuery.of(context).size.width > 650;
 
     return Scaffold(
       backgroundColor: Colors.black87,
@@ -71,26 +71,28 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
-      bottomNavigationBar: BlocBuilder<PomodoroBloc, PomodoroState>(
-        builder: (context, state) => BottomNavigationBar(
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.timer),
-              label: 'Pomodoro',
+      bottomNavigationBar: isLargeScreen
+          ? null
+          : BlocBuilder<PomodoroBloc, PomodoroState>(
+              builder: (context, state) => BottomNavigationBar(
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.timer),
+                    label: 'Pomodoro',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.snooze),
+                    label: 'Short Break',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.snooze),
+                    label: 'Long Break',
+                  ),
+                ],
+                onTap: (value) => onItemTapped(value, context),
+                currentIndex: getCurrentIndex(state),
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.snooze),
-              label: 'Short Break',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.snooze),
-              label: 'Long Break',
-            ),
-          ],
-          onTap: (value) => onItemTapped(value, context),
-          currentIndex: getCurrentIndex(state),
-        ),
-      ),
     );
   }
 }
